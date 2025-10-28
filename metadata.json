@@ -1,0 +1,5 @@
+{
+  "name": "Gemini Image Editor",
+  "description": "An application powered by Gemini 2.5 Flash Image (nano-banana) that allows users to edit images using simple text prompts. Users can add objects, remove backgrounds, or change styles with ease.",
+  "requestFramePermissions": []
+}
