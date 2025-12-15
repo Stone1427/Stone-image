@@ -1,30 +1,14 @@
 import { GoogleGenAI } from "@google/genai";
 
-// ==============================================================================
-// CONFIGURATION DE LA CLÉ API (POUR VOTRE PC)
-// ==============================================================================
-// Instructions :
-// 1. Obtenez votre clé API sur https://aistudio.google.com/app/apikey
-// 2. Collez-la ci-dessous entre les guillemets (ex: "AIzaSy...")
-// 3. Sauvegardez ce fichier.
-// ==============================================================================
-const LOCAL_API_KEY = ""; 
-// ==============================================================================
-
-
 export async function editImageWithPrompt(
   base64ImageData: string,
   mimeType: string,
-  prompt: string
+  prompt: string,
+  apiKey: string
 ): Promise<string | null> {
   
-  // Cette ligne permet au code de fonctionner :
-  // 1. Sur votre PC (en utilisant LOCAL_API_KEY que vous allez remplir)
-  // 2. Dans cette démo en ligne (en utilisant process.env.API_KEY)
-  const apiKey = LOCAL_API_KEY || process.env.API_KEY;
-
   if (!apiKey) {
-    throw new Error("Clé API manquante. Veuillez ouvrir 'services/geminiService.ts' et coller votre clé dans la variable LOCAL_API_KEY tout en haut du fichier.");
+    throw new Error("Clé API manquante. Veuillez configurer votre clé dans App.tsx ou via l'interface.");
   }
 
   const ai = new GoogleGenAI({ apiKey: apiKey });

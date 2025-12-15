@@ -1,7 +1,16 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { editImageWithPrompt } from './services/geminiService';
 import { fileToBase64 } from './utils/fileUtils';
-import { UploadIcon, SparklesIcon, LoadingSpinnerIcon, DownloadIcon, EyeIcon, WandIcon } from './components/Icons';
+import { UploadIcon, SparklesIcon, LoadingSpinnerIcon, DownloadIcon, EyeIcon, WandIcon, KeyIcon } from './components/Icons';
+
+// ============================================================================
+// 🔑 CONFIGURATION DE LA CLÉ API
+// ============================================================================
+// Instructions pour l'usage local :
+// 1. Obtenez votre clé sur https://aistudio.google.com/app/apikey
+// 2. Collez-la ci-dessous entre les guillemets.
+const LOCAL_API_KEY = ""; 
+// ============================================================================
 
 interface ImageFile {
   base64: string;
@@ -19,6 +28,15 @@ const ENHANCEMENTS = [
 ];
 
 const App: React.FC = () => {
+  // Gestion de la clé API : Priorité au code (LOCAL_API_KEY), puis .env, puis saisie utilisateur
+  const [apiKey, setApiKey] = useState<string>(() => {
+    // @ts-ignore
+    const viteEnvKey = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_API_KEY : undefined;
+    return LOCAL_API_KEY || viteEnvKey || process.env.API_KEY || "";
+  });
+  
+  const [showApiKeyInput, setShowApiKeyInput] = useState<boolean>(false);
+
   const [originalImage, setOriginalImage] = useState<ImageFile | null>(null);
   const [editedImage, setEditedImage] = useState<string | null>(null);
   const [prompt, setPrompt] = useState<string>('');
@@ -81,6 +99,12 @@ const App: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    if (!apiKey) {
+      setShowApiKeyInput(true);
+      setError("Veuillez d'abord configurer votre clé API (bouton clé en haut à droite).");
+      return;
+    }
+
     if (!originalImage || !prompt || isLoading) {
       return;
     }
@@ -93,7 +117,8 @@ const App: React.FC = () => {
       const generatedImage = await editImageWithPrompt(
         originalImage.base64,
         originalImage.mimeType,
-        prompt
+        prompt,
+        apiKey
       );
       if (generatedImage) {
         setEditedImage(`data:image/png;base64,${generatedImage}`);
@@ -126,7 +151,41 @@ const App: React.FC = () => {
 
 
   return (
-    <div className="min-h-screen bg-stone-950 text-stone-200 flex flex-col items-center p-4 sm:p-6 md:p-8 font-sans">
+    <div className="min-h-screen bg-stone-950 text-stone-200 flex flex-col items-center p-4 sm:p-6 md:p-8 font-sans relative">
+      
+      {/* Bouton de configuration API */}
+      <div className="absolute top-4 right-4 z-50">
+        <button
+          onClick={() => setShowApiKeyInput(!showApiKeyInput)}
+          className={`p-2 rounded-full transition-all duration-300 ${!apiKey ? 'bg-red-900/50 text-red-300 animate-pulse border border-red-500' : 'bg-stone-800 text-stone-400 hover:text-white hover:bg-stone-700'}`}
+          title="Configurer la clé API"
+        >
+          <KeyIcon className="w-6 h-6" />
+        </button>
+
+        {showApiKeyInput && (
+          <div className="absolute top-12 right-0 w-80 bg-stone-900 border border-stone-700 rounded-xl shadow-2xl p-4 flex flex-col gap-3">
+             <h3 className="text-sm font-bold text-stone-300">Clé API Google Gemini</h3>
+             <input 
+               type="password" 
+               value={apiKey}
+               onChange={(e) => setApiKey(e.target.value)}
+               placeholder="Collez votre clé ici (AIza...)"
+               className="w-full bg-stone-950 border border-stone-700 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+             />
+             <p className="text-xs text-stone-500">
+               Stockée temporairement. Pour une configuration permanente, modifiez la variable <code>LOCAL_API_KEY</code> dans <code>App.tsx</code>.
+             </p>
+             <button 
+               onClick={() => setShowApiKeyInput(false)}
+               className="self-end bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1.5 rounded-lg transition-colors"
+             >
+               Terminé
+             </button>
+          </div>
+        )}
+      </div>
+
       <header className="w-full max-w-5xl text-center mb-8">
         <h1 className="text-4xl sm:text-5xl font-bold text-stone-100 tracking-tight">
           Stone Image
