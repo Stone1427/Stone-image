@@ -1,14 +1,33 @@
+import { GoogleGenAI } from "@google/genai";
 
-import { GoogleGenAI, Modality } from "@google/genai";
+// ==============================================================================
+// CONFIGURATION DE LA CLÉ API (POUR VOTRE PC)
+// ==============================================================================
+// Instructions :
+// 1. Obtenez votre clé API sur https://aistudio.google.com/app/apikey
+// 2. Collez-la ci-dessous entre les guillemets (ex: "AIzaSy...")
+// 3. Sauvegardez ce fichier.
+// ==============================================================================
+const LOCAL_API_KEY = ""; 
+// ==============================================================================
+
 
 export async function editImageWithPrompt(
   base64ImageData: string,
   mimeType: string,
   prompt: string
 ): Promise<string | null> {
-  // Do not use process.env.API_KEY, it is not available in the browser.
-  // The API key is injected automatically.
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+  
+  // Cette ligne permet au code de fonctionner :
+  // 1. Sur votre PC (en utilisant LOCAL_API_KEY que vous allez remplir)
+  // 2. Dans cette démo en ligne (en utilisant process.env.API_KEY)
+  const apiKey = LOCAL_API_KEY || process.env.API_KEY;
+
+  if (!apiKey) {
+    throw new Error("Clé API manquante. Veuillez ouvrir 'services/geminiService.ts' et coller votre clé dans la variable LOCAL_API_KEY tout en haut du fichier.");
+  }
+
+  const ai = new GoogleGenAI({ apiKey: apiKey });
 
   const imagePart = {
     inlineData: {
@@ -27,9 +46,6 @@ export async function editImageWithPrompt(
       contents: {
         parts: [imagePart, textPart],
       },
-      config: {
-          responseModalities: [Modality.IMAGE],
-      },
     });
 
     for (const part of response.candidates?.[0]?.content?.parts || []) {
@@ -40,7 +56,7 @@ export async function editImageWithPrompt(
     return null;
 
   } catch (error) {
-    console.error("Error calling Gemini API:", error);
+    console.error("Error calling AI API:", error);
     if (error instanceof Error) {
         throw new Error(`API Error: ${error.message}`);
     }
