@@ -8,7 +8,7 @@ import { GoogleGenAI } from "@google/genai";
 // 2. Collez-la ci-dessous entre les guillemets (ex: "AIzaSy...")
 // 3. Sauvegardez ce fichier.
 // ==============================================================================
-const LOCAL_API_KEY = ""; 
+const LOCAL_API_KEY = ""AIzaSyDWHcP2EuO-fmlwH0rQzoixv6KsdynXIwU; 
 // ==============================================================================
 
 
